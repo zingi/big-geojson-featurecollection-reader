@@ -14,10 +14,12 @@ _has no dependencies_
 
 ## Usage
 
+* See [index.js](./index.js) and [test.js](./test.js) for usage.
+
 * I was able to read the features of [this](https://mega.nz/file/GlQgAJIC#r1J-Sm8wnHOiTx43E-Q-8AOA7c2PCBBqFz054GnuPsQ) really big FeatureCollection (6,2 GB).
 
   I set `--max-old-space-size=32768` (and it took about 10 minutes to process the whole file).
 
-* For testing you can also use [this]() FeatureCollection (2 GB).
+* For testing you can also use [this](https://mega.nz/file/SlIACDYa#GUqHplWkxVlWN8UVBcY_wbBx464cLWyfuX9GQpTuqyU) FeatureCollection (2 GB).
 
   I set `--max-old-space-size=16384` (and it took about 2 minutes to process the whole file on my computer).
