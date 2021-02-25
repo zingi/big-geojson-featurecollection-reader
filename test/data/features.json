@@ -1,0 +1,147 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "shape": "Polygon",
+        "name": "Unnamed Layer",
+        "category": "default"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              16.11557,
+              48.257141
+            ],
+            [
+              16.030426,
+              48.156467
+            ],
+            [
+              16.02356,
+              48.01519
+            ],
+            [
+              16.203461,
+              47.870302
+            ],
+            [
+              16.413574,
+              47.860167
+            ],
+            [
+              16.634674,
+              47.867538
+            ],
+            [
+              16.792603,
+              47.961422
+            ],
+            [
+              16.811829,
+              48.139516
+            ],
+            [
+              16.76239,
+              48.241138
+            ],
+            [
+              16.598969,
+              48.301467
+            ],
+            [
+              16.401215,
+              48.314255
+            ],
+            [
+              16.11557,
+              48.257141
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shape": "Rectangle",
+        "name": "Unnamed Layer",
+        "category": "default"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              12.941895,
+              52.27488
+            ],
+            [
+              13.897705,
+              52.27488
+            ],
+            [
+              13.897705,
+              52.764554
+            ],
+            [
+              12.941895,
+              52.764554
+            ],
+            [
+              12.941895,
+              52.27488
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shape": "Marker",
+        "name": "Unnamed Layer",
+        "category": "default"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.446716,
+          51.933682
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "shape": "Line",
+        "name": "Unnamed Layer",
+        "category": "default"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            6.04248,
+            46.172223
+          ],
+          [
+            7.009277,
+            46.845164
+          ],
+          [
+            8.217773,
+            47.398349
+          ],
+          [
+            9.349365,
+            47.554287
+          ]
+        ]
+      }
+    }
+  ]
+}
