@@ -27,128 +27,118 @@ class MyBigFeatureCollection {
   }
 
   loadGeoJsonFile (file) {
-    return new Promise((resolve, reject) => {
-      // load file into chunks of Buffer objects
-      this.bigBuffer.load(file).then(() => {
-        console.time('find occurrences')
-        // find occurrences of specific chars / words
-        const occ = this.bigBuffer.findOccurrences(toFind)
-        console.timeEnd('find occurrences')
+    // load file into chunks of Buffer objects
+    this.bigBuffer.load(file)
 
-        console.time('interpret occurrences')
-        // array of indices of '{' char
-        const curvedBracketsOpen = occ[0]
-        // array of indices of '}' char
-        const curvedBracketsClose = occ[1]
-        // array of indices of '[' char
-        const squareBracketOpen = occ[2]
-        // array of indices of ']' char
-        const squareBracketClose = occ[3]
-        // array of starting indices of string: 'Feature"'
-        const feature = occ[4]
+    console.time('find occurrences')
+    // find occurrences of specific chars / words
+    const occ = this.bigBuffer.findOccurrences(toFind)
+    console.timeEnd('find occurrences')
 
-        // simple stack to keep track of opened objects/arrays
-        const stack = []
+    console.time('interpret occurrences')
+    // array of indices of '{' char
+    const curvedBracketsOpen = occ[0]
+    // array of indices of '}' char
+    const curvedBracketsClose = occ[1]
+    // array of indices of '[' char
+    const squareBracketOpen = occ[2]
+    // array of indices of ']' char
+    const squareBracketClose = occ[3]
+    // array of starting indices of string: 'Feature"'
+    const feature = occ[4]
 
-        // array to save starting and end indices of all features in the bigBuffer
-        this.features = []
+    // simple stack to keep track of opened objects/arrays
+    const stack = []
 
-        // control variables to save current position of every index-array
-        let curvedBracketsOpenIndex = 0
-        let curvedBracketsCloseIndex = 0
-        let squareBracketOpenIndex = 0
-        let squareBracketCloseIndex = 0
-        let featureIndex = 0
+    // array to save starting and end indices of all features in the bigBuffer
+    this.features = []
 
-        /*
-        While there are still unviewd Objects/Arrays
-        */
-        while (curvedBracketsOpenIndex < curvedBracketsOpen.length ||
+    // control variables to save current position of every index-array
+    let curvedBracketsOpenIndex = 0
+    let curvedBracketsCloseIndex = 0
+    let squareBracketOpenIndex = 0
+    let squareBracketCloseIndex = 0
+    let featureIndex = 0
+
+    /*
+    While there are still unviewd Objects/Arrays
+    */
+    while (curvedBracketsOpenIndex < curvedBracketsOpen.length ||
           curvedBracketsCloseIndex < curvedBracketsClose.length ||
           squareBracketOpenIndex < squareBracketOpen.length ||
           squareBracketCloseIndex < squareBracketClose.length) {
-          /*
-          Find the next nearest index of char,
-          from our bucket of chars. ('{', '}', '[')
-          */
-          const min = Math.min(curvedBracketsOpen.get(curvedBracketsOpenIndex) ?? Infinity,
-            curvedBracketsClose.get(curvedBracketsCloseIndex) ?? Infinity,
-            squareBracketOpen.get(squareBracketOpenIndex) ?? Infinity,
-            squareBracketClose.get(squareBracketCloseIndex) ?? Infinity,
-            feature.get(featureIndex) ?? Infinity)
+      /*
+      Find the next nearest index of char,
+      from our bucket of chars. ('{', '}', '[')
+      */
+      const min = Math.min(curvedBracketsOpen.get(curvedBracketsOpenIndex) ?? Infinity,
+        curvedBracketsClose.get(curvedBracketsCloseIndex) ?? Infinity,
+        squareBracketOpen.get(squareBracketOpenIndex) ?? Infinity,
+        squareBracketClose.get(squareBracketCloseIndex) ?? Infinity,
+        feature.get(featureIndex) ?? Infinity)
 
-          if (curvedBracketsOpen.get(curvedBracketsOpenIndex) === min) {
-            // if the next char is a open curved bracket
+      if (curvedBracketsOpen.get(curvedBracketsOpenIndex) === min) {
+        // if the next char is a open curved bracket
 
-            curvedBracketsOpenIndex++
-            stack.push({ char: '{', index: min })
-          } else if (curvedBracketsClose.get(curvedBracketsCloseIndex) === min) {
-            // if the next char is a close curved bracket
+        curvedBracketsOpenIndex++
+        stack.push({ char: '{', index: min })
+      } else if (curvedBracketsClose.get(curvedBracketsCloseIndex) === min) {
+        // if the next char is a close curved bracket
 
-            if (stack.length > 0 && stack[stack.length - 1].char === '{') {
-              curvedBracketsCloseIndex++
+        if (stack.length > 0 && stack[stack.length - 1].char === '{') {
+          curvedBracketsCloseIndex++
 
-              const isFeature = !!stack[stack.length - 1].isFeature
-              const coordinates = stack[stack.length - 1].coordinates
+          const isFeature = !!stack[stack.length - 1].isFeature
+          const coordinates = stack[stack.length - 1].coordinates
 
-              const start = stack.pop().index
+          const start = stack.pop().index
 
-              if (isFeature) {
-                this.features.push({ start: start, end: min, coordinates: { start: coordinates[0], end: coordinates[1] } })
-              }
-            } else {
-              reject(new Error('Unexpectd "}" character'))
-              return
-            }
-          } else if (squareBracketOpen.get(squareBracketOpenIndex) === min) {
-            // if the next char is a open square bracket
-
-            if (stack.length > 0 && stack[stack.length - 1].char === '[') {
-              squareBracketOpenIndex++
-              squareBracketCloseIndex++
-            } else {
-              stack.push({ char: '[', index: min })
-              squareBracketOpenIndex++
-            }
-          } else if (squareBracketClose.get(squareBracketCloseIndex) === min) {
-            // if the next char is a close square bracket
-
-            if (stack.length > 0 && stack[stack.length - 1].char === '[') {
-              squareBracketCloseIndex++
-              const start = stack.pop().index
-              for (let i = stack.length - 1; i > -1; i--) {
-                if (stack[i].isFeature) {
-                  stack[i].coordinates = [start, min]
-                  break
-                }
-              }
-            } else {
-              console.log(stack)
-              reject(new Error('Unexpectd "]" character'))
-              return
-            }
-          } else if (feature.get(featureIndex) === min) {
-            // if the next char sequence is 'Feature"'
-
-            if (stack.length > 0 && stack[stack.length - 1].char === '{') {
-              featureIndex++
-              stack[stack.length - 1].isFeature = true
-            } else {
-              reject(new Error('Unexpected type: Feature property'))
-              return
-            }
-          } else {
-            reject(new Error('Invalid Tree. Unexpected JSON control sequence.'))
-            return
+          if (isFeature) {
+            this.features.push({ start: start, end: min, coordinates: { start: coordinates[0], end: coordinates[1] } })
           }
+        } else {
+          throw new Error('Unexpectd "}" character')
         }
-        console.timeEnd('interpret occurrences')
+      } else if (squareBracketOpen.get(squareBracketOpenIndex) === min) {
+        // if the next char is a open square bracket
 
-        resolve()
-      }).catch(err => {
-        reject(err)
-      })
-    })
+        if (stack.length > 0 && stack[stack.length - 1].char === '[') {
+          squareBracketOpenIndex++
+          squareBracketCloseIndex++
+        } else {
+          stack.push({ char: '[', index: min })
+          squareBracketOpenIndex++
+        }
+      } else if (squareBracketClose.get(squareBracketCloseIndex) === min) {
+        // if the next char is a close square bracket
+
+        if (stack.length > 0 && stack[stack.length - 1].char === '[') {
+          squareBracketCloseIndex++
+          const start = stack.pop().index
+          for (let i = stack.length - 1; i > -1; i--) {
+            if (stack[i].isFeature) {
+              stack[i].coordinates = [start, min]
+              break
+            }
+          }
+        } else {
+          console.log(stack)
+          throw new Error('Unexpectd "]" character')
+        }
+      } else if (feature.get(featureIndex) === min) {
+        // if the next char sequence is 'Feature"'
+
+        if (stack.length > 0 && stack[stack.length - 1].char === '{') {
+          featureIndex++
+          stack[stack.length - 1].isFeature = true
+        } else {
+          throw new Error('Unexpected type: Feature property')
+        }
+      } else {
+        throw new Error('Invalid Tree. Unexpected JSON control sequence.')
+      }
+    }
+    console.timeEnd('interpret occurrences')
   }
 
   /**

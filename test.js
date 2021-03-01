@@ -15,7 +15,7 @@ test('feature content', async t => {
   const bigFeatureCollection = new MyBigFeatureCollection({ maxDirectJsonParseByteCount: 1, bufferChunkSize: 250000000 })
 
   // load geojson file into a chunked buffer array
-  await bigFeatureCollection.loadGeoJsonFile(file)
+  bigFeatureCollection.loadGeoJsonFile(file)
 
   // parse features from buffer
   const parsedFeatures = [...bigFeatureCollection.getFeatures()]
@@ -29,10 +29,22 @@ test('feature content', async t => {
   })
 })
 
+test('big buffer', async t => {
+  const json = JSON.parse(await fs.promises.readFile(file, { encoding: 'utf8' }))
+  const bigFeatureCollection = new MyBigFeatureCollection({ maxDirectJsonParseByteCount: 250000000, bufferChunkSize: 100 })
+  bigFeatureCollection.loadGeoJsonFile(file)
+
+  const parsedFeatures = [...bigFeatureCollection.getFeatures()]
+  t.is(json.features.length, parsedFeatures.length)
+  parsedFeatures.forEach((feature, i) => {
+    t.is(JSON.stringify(json.features[i]), JSON.stringify(feature))
+  })
+})
+
 test('for of', async t => {
   const json = JSON.parse(await fs.promises.readFile(file, { encoding: 'utf8' }))
   const bigFeatureCollection = new MyBigFeatureCollection()
-  await bigFeatureCollection.loadGeoJsonFile(file)
+  bigFeatureCollection.loadGeoJsonFile(file)
 
   let i = 0
   // test for..of syntax
@@ -44,7 +56,7 @@ test('for of', async t => {
 test('iterator', async t => {
   const json = JSON.parse(await fs.promises.readFile(file, { encoding: 'utf8' }))
   const bigFeatureCollection = new MyBigFeatureCollection()
-  await bigFeatureCollection.loadGeoJsonFile(file)
+  bigFeatureCollection.loadGeoJsonFile(file)
 
   const iter = bigFeatureCollection.getFeatures()
 

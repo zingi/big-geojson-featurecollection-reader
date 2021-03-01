@@ -22,35 +22,27 @@ class MyBigBuffer {
 
   /**
    * Reads provided file into an array of buffers.
-   * @param {String} geoJsonPath 
+   * @param {String} geoJsonPath
    */
   load (geoJsonPath = '') {
-    return new Promise((resolve, reject) => {
-      this.bufferArr = []
-      this.uint8Arr = []
-      this.length = 0
+    const size = fs.statSync(geoJsonPath).size
+    const fd = fs.openSync(geoJsonPath, 'r')
 
-      const rs = fs.createReadStream(geoJsonPath, { highWaterMark: this.chunkSize })
+    for (let i = 0; i < size; i += this.chunkSize) {
+      const bufferSize = size - i < this.chunkSize ? size - i : this.chunkSize
+      const chunk = Buffer.alloc(bufferSize)
 
-      rs.on('data', chunk => {
-        this.bufferArr.push(chunk)
-        this.uint8Arr.push(new Uint8Array(chunk))
-        this.length += chunk.length
-      })
+      fs.readSync(fd, chunk, 0, bufferSize, i)
 
-      rs.on('error', err => {
-        reject(err)
-      })
-
-      rs.on('end', () => {
-        resolve()
-      })
-    })
+      this.bufferArr.push(chunk)
+      this.uint8Arr.push(new Uint8Array(chunk))
+      this.length += chunk.length
+    }
   }
 
   /**
    * Returns byte (Uint8) at position i
-   * @param {Number} i 
+   * @param {Number} i
    */
   get (i = 0) {
     const chunkNo = Math.floor(i / this.chunkSize)
@@ -142,7 +134,7 @@ class MyBigBuffer {
       const lastPart = this.bufferArr[endChunkNo].slice(0, endIndexInChunk)
 
       const parts = [firstPart]
-      for (let i = startChunkNo + 1; i < endChunkNo - 1; i++) {
+      for (let i = startChunkNo + 1; i < endChunkNo; i++) {
         parts.push(this.bufferArr[i].slice(0, this.chunkSize))
       }
       parts.push(lastPart)
